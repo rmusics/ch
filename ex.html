@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「如果...就...」句式練習模式</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #F4F9F4;
+            --card-border: #81C784;
+            --text-dark: #2C3E50;
+            --sound-blue: #0088CC;
+            --sound-hover: #006699;
+            --next-orange: #FF9800;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang HK", Arial, sans-serif;
+            background-color: #EBF3F9;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #2E7D32;
+            margin: 10px 0 5px 0;
+            text-align: center;
+        }
+
+        .mode-title {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-weight: bold;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .main-container {
+            background-color: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            padding: 25px;
+            width: 95%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        /* 題目情境區塊 */
+        .question-block {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+            background-color: #FFF8E1;
+            padding: 20px;
+            border-radius: 18px;
+            border: 2px dashed #FFB300;
+            box-sizing: border-box;
+        }
+
+        /* 文字與發音按鈕並排的容器 */
+        .text-audio-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .question-text {
+            font-size: 2.6rem;
+            font-weight: bold;
+            color: #E65100;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        /* 橫向長形圖片 (16:9 比例) */
+        .main-img {
+            width: 100%;
+            max-width: 500px;
+            height: 280px;
+            object-fit: contain;
+            border-radius: 16px;
+            border: 5px solid #FFD54F;
+            background-color: #FFFFFF;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        /* 純小喇叭圓形發音按鍵 */
+        .audio-speaker-btn {
+            background-color: var(--sound-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.6rem;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,136,204,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .audio-speaker-btn:hover {
+            background-color: var(--sound-hover);
+            transform: scale(1.1);
+        }
+
+        /* 選項並排區塊 */
+        .options-grid {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        /* 選項卡片大框 */
+        .option-card {
+            flex: 1;
+            background-color: var(--primary-bg);
+            border: 4px solid var(--card-border);
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(129, 199, 132, 0.3);
+            background-color: #E8F5E9;
+        }
+
+        /* 選項橫向長形圖片 */
+        .option-img {
+            width: 100%;
+            max-width: 360px;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 3px solid #C8E6C9;
+            background-color: #FFFFFF;
+            pointer-events: none;
+            margin-bottom: 15px;
+        }
+
+        .option-text {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #1B5E20;
+            pointer-events: none;
+            margin: 0;
+        }
+
+        /* 答案反饋與大按鈕控制區 */
+        .result-block {
+            display: none;
+            width: 100%;
+            background-color: #E3F2FD;
+            border: 3px solid #4FC3F7;
+            border-radius: 18px;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .full-sentence-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0D47A1;
+            margin: 0;
+        }
+
+        .control-flex {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .big-action-btn {
+            font-size: 1.8rem;
+            padding: 14px 45px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+        }
+
+        .btn-next-step { background-color: var(--next-orange); }
+        .btn-next-step:hover { background-color: #F57C00; transform: scale(1.03); }
+
+        img { text-indent: -10000px; }
+    </style>
+</head>
+<body>
+
+    <h1>「如果...就...」造句遊戲</h1>
+    <div class="mode-title">📝 練習模式</div>
+
+    <div class="main-container">
+        <div class="question-block">
+            <div class="text-audio-row">
+                <div class="question-text" id="if-label">如果下雨，</div>
+                <button class="audio-speaker-btn" onclick="speakCondition(event)">🔊</button>
+            </div>
+            <img id="if-pic" class="main-img" src="if1.png" alt="情境">
+        </div>
+
+        <div class="options-grid" id="options-container">
+            <div class="option-card" id="card-A" onclick="selectAnswer('A')">
+                <img id="opt-a-pic" class="option-img" src="a1a.png" alt="選項A">
+                <div class="text-audio-row">
+                    <div class="option-text" id="opt-a-label">就帶雨傘</div>
+                    <button class="audio-speaker-btn" onclick="speakOption('A', event)">🔊</button>
+                </div>
+            </div>
+            
+            <div class="option-card" id="card-B" onclick="selectAnswer('B')">
+                <img id="opt-b-pic" class="option-img" src="a1b.png" alt="選項B">
+                <div class="text-audio-row">
+                    <div class="option-text" id="opt-b-label">就帶雨衣</div>
+                    <button class="audio-speaker-btn" onclick="speakOption('B', event)">🔊</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-block" id="result-container">
+            <div class="text-audio-row">
+                <div class="full-sentence-display" id="sentence-output"></div>
+                <button class="audio-speaker-btn" onclick="playFullSentence()">🔊</button>
+            </div>
+            <div class="control-flex">
+                <button class="big-action-btn btn-next-step" onclick="goToNext()">➡️ 下一題</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const listData = [
+            { id: 1, cond: "下雨", a: "帶雨傘", b: "帶雨衣" },
+            { id: 2, cond: "做完功課", a: "可以看電視", b: "可以休息" },
+            { id: 3, cond: "天氣炎熱", a: "開風扇", b: "開冷氣" },
+            { id: 4, cond: "口渴", a: "飲水", b: "飲橙汁" },
+            { id: 5, cond: "肚子餓", a: "吃餅乾", b: "吃麵包" },
+            { id: 6, cond: "去公園", a: "玩滑梯", b: "野餐" },
+            { id: 7, cond: "下雨", a: "帶雨傘", b: "帶雨衣" },
+            { id: 8, cond: "做完功課", a: "可以看電視", b: "可以休息" },
+            { id: 9, cond: "天氣炎熱", a: "開風扇", b: "開冷氣" },
+            { id: 10, cond: "口渴", a: "飲水", b: "飲橙汁" },
+            { id: 11, cond: "肚子餓", a: "吃餅乾", b: "吃麵包" },
+            { id: 12, cond: "去公園", a: "玩滑梯", b: "野餐" }
+        ];
+
+        let index = 0;
+        let finalPhrase = "";
+        const SLOW_SPEED = 0.5;
+
+        const APPLAUSE_URL = "https://www.soundjay.com/human/sounds/applause-01.mp3";
+        const applauseAudio = new Audio(APPLAUSE_URL);
+
+        const ifLabel = document.getElementById('if-label');
+        const ifPic = document.getElementById('if-pic');
+        const optAPic = document.getElementById('opt-a-pic');
+        const optBPic = document.getElementById('opt-b-pic');
+        const optALabel = document.getElementById('opt-a-label');
+        const optBLabel = document.getElementById('opt-b-label');
+        const resultContainer = document.getElementById('result-container');
+        const optionsContainer = document.getElementById('options-container');
+        const sentenceOutput = document.getElementById('sentence-output');
+        
+        // 取得卡片 DOM 元素
+        const cardA = document.getElementById('card-A');
+        const cardB = document.getElementById('card-B');
+
+        function renderUi() {
+            const data = listData[index];
+            
+            ifLabel.innerText = `如果${data.cond}，`;
+            optALabel.innerText = `就${data.a}`;
+            optBLabel.innerText = `就${data.b}`;
+
+            ifPic.src = `if${data.id}.png`;
+            optAPic.src = `a${data.id}a.png`;
+            optBPic.src = `a${data.id}b.png`;
+
+            // 重置：顯示所有卡片與點擊狀態
+            cardA.style.display = 'flex';
+            cardB.style.display = 'flex';
+            optionsContainer.style.pointerEvents = 'auto';
+            resultContainer.style.display = 'none';
+        }
+
+        function tts(text) {
+            window.speechSynthesis.cancel(); 
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-HK'; 
+            msg.rate = SLOW_SPEED; 
+            msg.pitch = 1.0;
+            window.speechSynthesis.speak(msg);
+        }
+
+        function speakCondition(e) {
+            e.stopPropagation(); 
+            const data = listData[index];
+            tts(`如果${data.cond}`);
+        }
+
+        function speakOption(type, e) {
+            e.stopPropagation(); 
+            const data = listData[index];
+            const phrase = type === 'A' ? data.a : data.b;
+            tts(`就${phrase}`);
+        }
+
+        function selectAnswer(type) {
+            const data = listData[index];
+            const choice = type === 'A' ? data.a : data.b;
+            
+            finalPhrase = `如果${data.cond}，就${choice}。`;
+            sentenceOutput.innerText = finalPhrase;
+            
+            // 核心修改：隱藏「沒有被選擇」的那張卡片
+            if (type === 'A') {
+                cardB.style.display = 'none'; // 隱藏 B，留下 A
+            } else {
+                cardA.style.display = 'none'; // 隱藏 A，留下 B
+            }
+
+            resultContainer.style.display = 'block';
+            optionsContainer.style.pointerEvents = 'none'; // 鎖定剩餘卡片防干擾
+
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+            }
+
+            applauseAudio.currentTime = 0; 
+            applauseAudio.play().catch(err => console.log("音訊播放阻攔:", err));
+
+            setTimeout(() => {
+                playFullSentence();
+            }, 1800);
+        }
+
+        function playFullSentence() {
+            tts(finalPhrase);
+        }
+
+        function goToNext() {
+            window.speechSynthesis.cancel();
+            applauseAudio.pause(); 
+            index++;
+            
+            if (index >= listData.length) {
+                index = 0; 
+            }
+            renderUi();
+        }
+
+        window.onload = renderUi;
+    </script>
+</body>
+</html>
