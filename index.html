@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>「如果...就...」句式練習模式</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #F4F9F4;
+            --card-border: #81C784;
+            --text-dark: #2C3E50;
+            --sound-blue: #0088CC;
+            --sound-hover: #006699;
+            --next-orange: #FF9800;
+        }
+
+        /* 鎖定全螢幕，禁止任何滾動條 */
+        body {
+            font-family: "Microsoft JhengHei", "PingFang HK", Arial, sans-serif;
+            background-color: #EBF3F9;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 8px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            overflow: hidden; 
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #2E7D32;
+            margin: 2px 0;
+            text-align: center;
+        }
+
+        .mode-title {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            font-weight: bold;
+            background: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* 主容器：用盡剩餘的所有垂直空間 */
+        .main-container {
+            background-color: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            padding: 12px;
+            width: 100%;
+            max-width: 768px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            overflow: hidden;
+            gap: 0; /* 核心修改：移除區塊間的間距，完全無縫接軌 */
+        }
+
+        /* 頂部題目區塊：答題前盡量放大 */
+        .question-block {
+            width: 100%;
+            flex: 1.2; /* 答題前佔用較多空間 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFF8E1;
+            padding: 12px;
+            border-radius: 18px;
+            border: 2px dashed #FFB300;
+            box-sizing: border-box;
+            transition: all 0.3s ease-in-out; /* 平滑縮小動畫 */
+        }
+
+        .text-audio-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+
+        .question-text {
+            font-size: 2.3rem;
+            font-weight: bold;
+            color: #E65100;
+            letter-spacing: 1px;
+            margin: 0;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* 頂部圖片：答題前最大高度為 28vh */
+        .main-img {
+            width: 100%;
+            max-width: 450px;
+            height: 100%;
+            max-height: 28vh; 
+            object-fit: contain;
+            border-radius: 16px;
+            border: 4px solid #FFD54F;
+            background-color: #FFFFFF;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .audio-speaker-btn {
+            background-color: var(--sound-blue);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 46px;
+            height: 46px;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        /* 中部選項區塊：與題目緊密相連 */
+        .options-grid {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 12px;
+            flex: 1; /* 答題前均分剩餘空間 */
+            padding-top: 10px; /* 僅留少許上方內邊距 */
+            box-sizing: border-box;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .option-card {
+            flex: 1;
+            background-color: var(--primary-bg);
+            border: 3px solid var(--card-border);
+            border-radius: 20px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* 選項圖片：答題前最大高度為 20vh */
+        .option-img {
+            width: 100%;
+            max-width: 300px;
+            height: 100%;
+            max-height: 20vh; 
+            object-fit: contain;
+            border-radius: 12px;
+            border: 2px solid #C8E6C9;
+            background-color: #FFFFFF;
+            pointer-events: none;
+            margin-bottom: 6px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .option-text {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1B5E20;
+            pointer-events: none;
+            margin: 0;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* =======================================================
+           ⚡ 關鍵動態樣式：當「answered」啟用時，全面向上收縮
+           ======================================================= */
+        .answered .question-block {
+            flex: 0.7; /* 縮小題目區塊比例 */
+            padding: 6px;
+        }
+        .answered .main-img {
+            max-height: 15vh; /* 圖片高度從 28vh 壓縮至 15vh */
+        }
+        .answered .question-text {
+            font-size: 1.8rem; /* 字體微調變小 */
+        }
+
+        .answered .options-grid {
+            flex: 0.7; /* 縮小選項區塊比例 */
+            padding-top: 5px;
+        }
+        .answered .option-card {
+            padding: 6px;
+        }
+        .answered .option-img {
+            max-height: 13vh; /* 選項圖片從 20vh 壓縮至 13vh */
+        }
+        .answered .option-text {
+            font-size: 1.6rem; /* 字體微調變小 */
+        }
+
+        /* 底部答案反饋區 */
+        .result-block {
+            display: none;
+            width: 100%;
+            background-color: #E3F2FD;
+            border: 3px solid #4FC3F7;
+            border-radius: 18px;
+            padding: 10px;
+            text-align: center;
+            box-sizing: border-box;
+            margin-top: 5px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .full-sentence-display {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #0D47A1;
+            margin: 0;
+        }
+
+        .control-flex {
+            display: flex;
+            justify-content: center;
+            margin-top: 5px;
+        }
+
+        .big-action-btn {
+            font-size: 1.6rem;
+            padding: 6px 50px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-next-step { background-color: var(--next-orange); }
+
+        img { text-indent: -10000px; }
+    </style>
+</head>
+<body>
+
+    <h1>SS1句式練習</h1>
+
+    <div class="main-container" id="main-container">
+        
+        <div class="question-block">
+            <div class="text-audio-row">
+                <div class="question-text" id="if-label">如果下雨，</div>
+                <button class="audio-speaker-btn" onclick="speakCondition(event)">🔊</button>
+            </div>
+            <img id="if-pic" class="main-img" src="if1.png" alt="情境">
+        </div>
+
+        <div class="options-grid" id="options-container">
+            <div class="option-card" id="card-A" onclick="selectAnswer('A')">
+                <img id="opt-a-pic" class="option-img" src="a1a.png" alt="選項A">
+                <div class="text-audio-row">
+                    <div class="option-text" id="opt-a-label">就帶雨傘</div>
+                    <button class="audio-speaker-btn" onclick="speakOption('A', event)">🔊</button>
+                </div>
+            </div>
+            
+            <div class="option-card" id="card-B" onclick="selectAnswer('B')">
+                <img id="opt-b-pic" class="option-img" src="a1b.png" alt="選項B">
+                <div class="text-audio-row">
+                    <div class="option-text" id="opt-b-label">就帶雨衣</div>
+                    <button class="audio-speaker-btn" onclick="speakOption('B', event)">🔊</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-block" id="result-container">
+            <div class="text-audio-row">
+                <div class="full-sentence-display" id="sentence-output"></div>
+                <button class="audio-speaker-btn" onclick="playFullSentence()">🔊</button>
+            </div>
+            <div class="control-flex">
+                <button class="big-action-btn btn-next-step" onclick="goToNext()">➡️ 下一題</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const listData = [
+            { id: 1, cond: "下雨", a: "帶雨傘", b: "帶雨衣" },
+            { id: 2, cond: "做完功課", a: "可以看電視", b: "可以休息" },
+            { id: 3, cond: "天氣炎熱", a: "開風扇", b: "開冷氣" },
+            { id: 4, cond: "口渴", a: "飲水", b: "飲橙汁" },
+            { id: 5, cond: "肚子餓", a: "吃餅乾", b: "吃麵包" },
+            { id: 6, cond: "去公園", a: "玩滑梯", b: "野餐" },
+            { id: 7, cond: "下雨", a: "帶雨傘", b: "帶雨衣" },
+            { id: 8, cond: "做完功課", a: "可以看電視", b: "可以休息" },
+            { id: 9, cond: "天氣炎熱", a: "開風扇", b: "開冷氣" },
+            { id: 10, cond: "口渴", a: "飲水", b: "飲橙汁" },
+            { id: 11, cond: "肚子餓", a: "吃餅乾", b: "吃麵包" },
+            { id: 12, cond: "去公園", a: "玩滑梯", b: "野餐" }
+        ];
+
+        let index = 0;
+        let finalPhrase = "";
+        const SLOW_SPEED = 0.5;
+
+        const APPLAUSE_URL = "https://www.soundjay.com/human/sounds/applause-01.mp3";
+        const applauseAudio = new Audio(APPLAUSE_URL);
+
+        const mainContainer = document.getElementById('main-container');
+        const ifLabel = document.getElementById('if-label');
+        const ifPic = document.getElementById('if-pic');
+        const optAPic = document.getElementById('opt-a-pic');
+        const optBPic = document.getElementById('opt-b-pic');
+        const optALabel = document.getElementById('opt-a-label');
+        const optBLabel = document.getElementById('opt-b-label');
+        const resultContainer = document.getElementById('result-container');
+        const optionsContainer = document.getElementById('options-container');
+        const sentenceOutput = document.getElementById('sentence-output');
+        
+        const cardA = document.getElementById('card-A');
+        const cardB = document.getElementById('card-B');
+
+        function renderUi() {
+            const data = listData[index];
+            
+            // 移除答題後的收縮狀態，還原為大版面
+            mainContainer.classList.remove('answered');
+
+            ifLabel.innerText = `如果${data.cond}，`;
+            optALabel.innerText = `就${data.a}`;
+            optBLabel.innerText = `就${data.b}`;
+
+            ifPic.src = `if${data.id}.png`;
+            optAPic.src = `a${data.id}a.png`;
+            optBPic.src = `a${data.id}b.png`;
+
+            cardA.style.display = 'flex';
+            cardB.style.display = 'flex';
+            optionsContainer.style.pointerEvents = 'auto';
+            resultContainer.style.display = 'none';
+        }
+
+        function tts(text) {
+            window.speechSynthesis.cancel(); 
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'zh-HK'; 
+            msg.rate = SLOW_SPEED; 
+            msg.pitch = 1.0;
+            window.speechSynthesis.speak(msg);
+        }
+
+        function speakCondition(e) {
+            e.stopPropagation(); 
+            const data = listData[index];
+            tts(`如果${data.cond}`);
+        }
+
+        function speakOption(type, e) {
+            e.stopPropagation(); 
+            const data = listData[index];
+            const phrase = type === 'A' ? data.a : data.b;
+            tts(`就${phrase}`);
+        }
+
+        function selectAnswer(type) {
+            const data = listData[index];
+            const choice = type === 'A' ? data.a : data.b;
+            
+            finalPhrase = `如果${data.cond}，就${choice}。`;
+            sentenceOutput.innerText = finalPhrase;
+            
+            // 觸發全畫面向上收縮動畫
+            mainContainer.classList.add('answered');
+
+            if (type === 'A') {
+                cardB.style.display = 'none'; 
+            } else {
+                cardA.style.display = 'none'; 
+            }
+
+            // 顯示句子框
+            resultContainer.style.display = 'block';
+            optionsContainer.style.pointerEvents = 'none'; 
+
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+            }
+
+            applauseAudio.currentTime = 0; 
+            applauseAudio.play().catch(err => console.log("音訊播放阻攔:", err));
+
+            setTimeout(() => {
+                playFullSentence();
+            }, 1800);
+        }
+
+        function playFullSentence() {
+            tts(finalPhrase);
+        }
+
+        function goToNext() {
+            window.speechSynthesis.cancel();
+            applauseAudio.pause(); 
+            index++;
+            
+            if (index >= listData.length) {
+                index = 0; 
+            }
+            renderUi();
+        }
+
+        window.onload = renderUi;
+    </script>
+</body>
+</html>
