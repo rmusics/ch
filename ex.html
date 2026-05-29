@@ -15,13 +15,13 @@
             --next-orange: #FF9800;
         }
 
-        /* 核心修改：強制鎖定身體高度為 100 螢幕高度，並禁止滾動 */
+        /* 鎖定全螢幕，禁止任何滾動條 */
         body {
             font-family: "Microsoft JhengHei", "PingFang HK", Arial, sans-serif;
             background-color: #EBF3F9;
             color: var(--text-dark);
             margin: 0;
-            padding: 10px;
+            padding: 8px;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -31,51 +31,53 @@
         }
 
         h1 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: #2E7D32;
-            margin: 5px 0 2px 0;
+            margin: 2px 0;
             text-align: center;
         }
 
         .mode-title {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #7f8c8d;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-weight: bold;
             background: white;
-            padding: 3px 12px;
+            padding: 2px 10px;
             border-radius: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        /* 主容器彈性填滿，並配合內容物自動均分空間 */
+        /* 主容器：用盡剩餘的所有垂直空間 */
         .main-container {
             background-color: white;
             border-radius: 24px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            padding: 15px;
+            padding: 12px;
             width: 100%;
-            max-width: 768px; /* 針對標準平板寬度優化 */
+            max-width: 768px;
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; 
             box-sizing: border-box;
             overflow: hidden;
+            gap: 0; /* 核心修改：移除區塊間的間距，完全無縫接軌 */
         }
 
-        /* 題目情境區塊 */
+        /* 頂部題目區塊：答題前盡量放大 */
         .question-block {
             width: 100%;
+            flex: 1.2; /* 答題前佔用較多空間 */
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             background-color: #FFF8E1;
-            padding: 10px;
+            padding: 12px;
             border-radius: 18px;
             border: 2px dashed #FFB300;
             box-sizing: border-box;
-            margin-bottom: 5px;
+            transition: all 0.3s ease-in-out; /* 平滑縮小動畫 */
         }
 
         .text-audio-row {
@@ -87,55 +89,54 @@
             width: 100%;
         }
 
-        /* 微調字體以符合平板直向比例 */
         .question-text {
-            font-size: 2.1rem;
+            font-size: 2.3rem;
             font-weight: bold;
             color: #E65100;
             letter-spacing: 1px;
             margin: 0;
+            transition: all 0.3s ease-in-out;
         }
 
-        /* 圖片高度改為依據螢幕高度彈性縮放 (20vh) */
+        /* 頂部圖片：答題前最大高度為 28vh */
         .main-img {
             width: 100%;
-            max-width: 420px;
-            height: 20vh; 
+            max-width: 450px;
+            height: 100%;
+            max-height: 28vh; 
             object-fit: contain;
             border-radius: 16px;
             border: 4px solid #FFD54F;
             background-color: #FFFFFF;
+            transition: all 0.3s ease-in-out;
         }
 
-        /* 微調喇叭按鈕尺寸，確保不擠壓空間 */
         .audio-speaker-btn {
             background-color: var(--sound-blue);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            font-size: 1.3rem;
+            width: 46px;
+            height: 46px;
+            font-size: 1.4rem;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: all 0.2s;
             flex-shrink: 0;
+            transition: all 0.2s;
         }
 
-        .audio-speaker-btn:hover {
-            background-color: var(--sound-hover);
-            transform: scale(1.05);
-        }
-
-        /* 選項並排區塊 */
+        /* 中部選項區塊：與題目緊密相連 */
         .options-grid {
             display: flex;
             justify-content: space-between;
             width: 100%;
-            gap: 15px;
-            margin-bottom: 5px;
+            gap: 12px;
+            flex: 1; /* 答題前均分剩餘空間 */
+            padding-top: 10px; /* 僅留少許上方內邊距 */
+            box-sizing: border-box;
+            transition: all 0.3s ease-in-out;
         }
 
         .option-card {
@@ -143,42 +144,69 @@
             background-color: var(--primary-bg);
             border: 3px solid var(--card-border);
             border-radius: 20px;
-            padding: 10px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
             box-sizing: border-box;
+            transition: all 0.3s ease-in-out;
         }
 
-        .option-card:hover {
-            background-color: #E8F5E9;
-        }
-
-        /* 選項圖片同樣改為高度彈性縮放 (15vh) */
+        /* 選項圖片：答題前最大高度為 20vh */
         .option-img {
             width: 100%;
-            max-width: 280px;
-            height: 15vh; 
+            max-width: 300px;
+            height: 100%;
+            max-height: 20vh; 
             object-fit: contain;
             border-radius: 12px;
             border: 2px solid #C8E6C9;
             background-color: #FFFFFF;
             pointer-events: none;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            transition: all 0.3s ease-in-out;
         }
 
         .option-text {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: bold;
             color: #1B5E20;
             pointer-events: none;
             margin: 0;
+            transition: all 0.3s ease-in-out;
         }
 
-        /* 答案反饋與大按鈕控制區 */
+        /* =======================================================
+           ⚡ 關鍵動態樣式：當「answered」啟用時，全面向上收縮
+           ======================================================= */
+        .answered .question-block {
+            flex: 0.7; /* 縮小題目區塊比例 */
+            padding: 6px;
+        }
+        .answered .main-img {
+            max-height: 15vh; /* 圖片高度從 28vh 壓縮至 15vh */
+        }
+        .answered .question-text {
+            font-size: 1.8rem; /* 字體微調變小 */
+        }
+
+        .answered .options-grid {
+            flex: 0.7; /* 縮小選項區塊比例 */
+            padding-top: 5px;
+        }
+        .answered .option-card {
+            padding: 6px;
+        }
+        .answered .option-img {
+            max-height: 13vh; /* 選項圖片從 20vh 壓縮至 13vh */
+        }
+        .answered .option-text {
+            font-size: 1.6rem; /* 字體微調變小 */
+        }
+
+        /* 底部答案反饋區 */
         .result-block {
             display: none;
             width: 100%;
@@ -188,17 +216,17 @@
             padding: 10px;
             text-align: center;
             box-sizing: border-box;
-            margin-top: auto; /* 確保句子框緊貼底部 */
-            animation: fadeIn 0.2s ease-in-out;
+            margin-top: 5px;
+            animation: slideUp 0.3s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .full-sentence-display {
-            font-size: 2.1rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: #0D47A1;
             margin: 0;
@@ -211,28 +239,28 @@
         }
 
         .big-action-btn {
-            font-size: 1.5rem;
-            padding: 8px 40px;
+            font-size: 1.6rem;
+            padding: 6px 50px;
             border: none;
             border-radius: 14px;
             cursor: pointer;
             font-weight: bold;
             color: white;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: all 0.2s;
         }
 
         .btn-next-step { background-color: var(--next-orange); }
-        .btn-next-step:hover { background-color: #F57C00; }
 
         img { text-indent: -10000px; }
     </style>
 </head>
 <body>
 
-    <h1>SS1句式練習</h1>
+    <h1>「如果...就...」造句遊戲</h1>
+    <div class="mode-title">📝 練習模式</div>
 
-    <div class="main-container">
+    <div class="main-container" id="main-container">
+        
         <div class="question-block">
             <div class="text-audio-row">
                 <div class="question-text" id="if-label">如果下雨，</div>
@@ -293,6 +321,7 @@
         const APPLAUSE_URL = "https://www.soundjay.com/human/sounds/applause-01.mp3";
         const applauseAudio = new Audio(APPLAUSE_URL);
 
+        const mainContainer = document.getElementById('main-container');
         const ifLabel = document.getElementById('if-label');
         const ifPic = document.getElementById('if-pic');
         const optAPic = document.getElementById('opt-a-pic');
@@ -309,6 +338,9 @@
         function renderUi() {
             const data = listData[index];
             
+            // 移除答題後的收縮狀態，還原為大版面
+            mainContainer.classList.remove('answered');
+
             ifLabel.innerText = `如果${data.cond}，`;
             optALabel.innerText = `就${data.a}`;
             optBLabel.innerText = `就${data.b}`;
@@ -352,12 +384,16 @@
             finalPhrase = `如果${data.cond}，就${choice}。`;
             sentenceOutput.innerText = finalPhrase;
             
+            // 觸發全畫面向上收縮動畫
+            mainContainer.classList.add('answered');
+
             if (type === 'A') {
                 cardB.style.display = 'none'; 
             } else {
                 cardA.style.display = 'none'; 
             }
 
+            // 顯示句子框
             resultContainer.style.display = 'block';
             optionsContainer.style.pointerEvents = 'none'; 
 
