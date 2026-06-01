@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>「如果...就...」句式練習</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -15,19 +15,35 @@
             --next-orange: #FF9800;
         }
 
-        /* 鎖定全螢幕，禁止任何滾動條 */
+        /* 2. 徹底鎖定全螢幕，禁止任何滾動條、畫面回彈與文字反白選取 */
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;          /* 固定整個視窗 */
+            top: 0;
+            left: 0;
+            touch-action: none;       /* 禁用瀏覽器預設觸控手勢 */
+            
+            /* 防止長按選取 */
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            
+            background-color: #EBF3F9;
+        }
+
+        /* 保留你原本對 body 的排版設定 */
         body {
             font-family: "Microsoft JhengHei", "PingFang HK", Arial, sans-serif;
-            background-color: #EBF3F9;
             color: var(--text-dark);
-            margin: 0;
             padding: 8px;
-            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             box-sizing: border-box;
-            overflow: hidden; 
         }
 
         h1 {
@@ -164,13 +180,13 @@
             margin-bottom: 6px;
         }
 
-        /* 影片播放器樣式 (預設隱藏，答題後放大顯示) */
+        /* 影片播放器樣式 */
         .option-video {
             display: none;
             width: 100%;
             max-width: 600px;
             height: 100%;
-            max-height: 55vh; /* 增加影片最大高度 */
+            max-height: 55vh;
             object-fit: contain;
             border-radius: 12px;
             border: 4px solid #81C784;
@@ -186,23 +202,10 @@
             margin: 0;
         }
 
-        /* =======================================================
-           ⚡ 關鍵動態樣式：答題後的版面變化
-           ======================================================= */
-        /* 1. 隱藏頂部如果框 */
-        .answered .question-block {
-            display: none; 
-        }
-
-        /* 2. 選項區域頂部間距歸零 */
-        .answered .options-grid {
-            padding-top: 0; 
-        }
-
-        /* 3. 隱藏綠框內的文字與小喇叭 (只留影片) */
-        .answered .option-card .text-audio-row {
-            display: none;
-        }
+        /* 關鍵動態樣式：答題後的版面變化 */
+        .answered .question-block { display: none; }
+        .answered .options-grid { padding-top: 0; }
+        .answered .option-card .text-audio-row { display: none; }
 
         /* 底部答案反饋區 */
         .result-block {
@@ -338,7 +341,7 @@
         function renderUi() {
             const data = listData[index];
             
-            // 移除答題狀態，還原為初始版面 (文字會自動重新顯示)
+            // 移除答題狀態，還原為初始版面
             mainContainer.classList.remove('answered');
 
             ifLabel.innerText = `如果${data.cond}，`;
@@ -395,20 +398,20 @@
             finalPhrase = `如果${data.cond}，就${choice}。`;
             sentenceOutput.innerText = finalPhrase;
             
-            // 隱藏頂部如果框，為影片騰出極大空間 (同時隱藏卡片內的文字)
+            // 隱藏頂部如果框，為影片騰出極大空間
             mainContainer.classList.add('answered');
 
             if (type === 'A') {
-                cardB.style.display = 'none'; // 隱藏未選的選項
-                optAPic.style.display = 'none'; // 隱藏靜態圖片
-                optAVideo.style.display = 'block'; // 顯示影片播放器
-                optAVideo.src = `${data.id}a.mp4`; // 動態載入對應影片
+                cardB.style.display = 'none'; 
+                optAPic.style.display = 'none'; 
+                optAVideo.style.display = 'block'; 
+                optAVideo.src = `${data.id}a.mp4`; 
                 optAVideo.play().catch(e => console.log("影片播放需使用者互動:", e));
             } else {
                 cardA.style.display = 'none'; 
                 optBPic.style.display = 'none'; 
                 optBVideo.style.display = 'block'; 
-                optBVideo.src = `${data.id}b.mp4`; // 動態載入對應影片
+                optBVideo.src = `${data.id}b.mp4`; 
                 optBVideo.play().catch(e => console.log("影片播放需使用者互動:", e));
             }
 
@@ -445,6 +448,32 @@
         }
 
         window.onload = renderUi;
+
+        /* ==========================================
+           3. iPad/iOS 防呆機制：阻擋手勢縮放與滑動 
+           ========================================== */
+           
+        // 阻擋雙指縮放
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        // 阻擋雙擊放大
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            let now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // 阻擋頁面被拖拉滑動 (橡皮筋效應)
+        document.addEventListener('touchmove', function(event) {
+            event.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 </html>
